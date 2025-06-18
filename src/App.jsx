@@ -18,6 +18,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/home" element={<Home />} />
               <Route path="/topics" element={<TopicSelection />} />
               <Route path="/dashboard" element={<Dashboard />} />
             </Routes>

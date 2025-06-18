@@ -43,6 +43,35 @@ function Auth() {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    setLoading(true);
+    try {
+      // For now, we'll simulate a successful Google login
+      // In a real implementation, you'd send the credential to your backend
+      console.log('Google OAuth success:', credentialResponse);
+      
+      // Simulate user data from Google
+      const userData = {
+        email: 'user@gmail.com', // This would come from Google
+        id: 'google-user-id',
+        token: 'google-token',
+        method: 'google'
+      };
+      
+      login(userData);
+      navigate('/home');
+    } catch (err) {
+      setError('Google authentication failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError('Google authentication failed.');
+  };
+
   return (
     <div className="fixed inset-0 w-full h-full flex items-center justify-center bg-black overflow-hidden">
       {/* Neon glass card */}
@@ -121,10 +150,11 @@ function Auth() {
         </div>
         <div className="flex justify-center">
           <GoogleLogin
-            onSuccess={() => window.location.reload()}
-            onError={() => {}}
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
             useOneTap
             width="100%"
+            disabled={loading}
           />
         </div>
       </div>
