@@ -17,4 +17,9 @@ export async function login(email, password) {
   return res.data;
 }
 
-// Add more API functions as needed (refresh, logout, preferences, etc.) 
+export async function logout() {
+  const res = await api.post('/auth/logout');
+  return res.data;
+}
+
+// Add more API functions as needed (refresh, preferences, etc.) 

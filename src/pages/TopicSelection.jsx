@@ -60,9 +60,26 @@ function TopicSelection() {
     navigate('/dashboard');
   };
 
+  const handleBack = () => {
+    navigate('/home');
+  };
+
   return (
     <div className="fixed inset-0 w-full h-full flex items-center justify-center bg-black z-0">
       <div className="absolute inset-0 z-0 pointer-events-none" />
+      
+      {/* Back Button */}
+      <button
+        onClick={handleBack}
+        className="absolute top-6 left-6 z-20 px-4 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white font-semibold shadow-lg hover:from-gray-700 hover:to-gray-800 transition flex items-center gap-2"
+        style={{ boxShadow: '0 0 4px 1px #6b728088, 0 0 8px 2px #37415155' }}
+      >
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Back
+      </button>
+
       <div className="relative z-10 w-full max-w-2xl mx-auto p-4 rounded-2xl bg-black bg-opacity-80 border border-purple-700/60 shadow-2xl" style={{ boxShadow: '0 0 18px 0 #a21caf88, 0 0 32px 0 #2563eb55' }}>
         <h2 className="text-2xl font-extrabold text-center mb-4" style={{ color: '#a78bfa', textShadow: '0 0 4px #a21caf88, 0 0 8px #2563eb55' }}>
           Select Your Topics
