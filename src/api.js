@@ -22,4 +22,14 @@ export async function logout() {
   return res.data;
 }
 
+export async function getPreferences() {
+  const res = await api.get('/preferences');
+  return res.data;
+}
+
+export async function getProgress() {
+  const res = await api.get('/progress');
+  return res.data;
+}
+
 // Add more API functions as needed (refresh, preferences, etc.) 
