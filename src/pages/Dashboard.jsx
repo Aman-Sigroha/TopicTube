@@ -1,19 +1,43 @@
 import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
-import { logout as apiLogout } from '../api';
+import { logout as apiLogout, getPreferences, getProgress } from '../api';
+import { useEffect, useState } from 'react';
 
 function Dashboard() {
   const { user, logout } = useUser();
   const navigate = useNavigate();
 
-  // Placeholder data
-  const topics = ['Technology', 'Music', 'Science'];
-  const languages = ['English', 'Spanish'];
-  const progress = [
-    { topic: 'Technology', watched: 12, liked: 5 },
-    { topic: 'Music', watched: 8, liked: 3 },
-    { topic: 'Science', watched: 5, liked: 2 },
-  ];
+  const [topics, setTopics] = useState([]);
+  const [languages, setLanguages] = useState([]);
+  const [progress, setProgress] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      setError('');
+      try {
+        const pref = await getPreferences();
+        setTopics(pref.topics || []);
+        setLanguages(pref.languages || []);
+        const prog = await getProgress();
+        // Aggregate progress by topic
+        const topicStats = {};
+        for (const p of prog) {
+          if (!topicStats[p.topic]) topicStats[p.topic] = { topic: p.topic, watched: 0, liked: 0 };
+          if (p.status === 'watched') topicStats[p.topic].watched += 1;
+          if (p.status === 'liked') topicStats[p.topic].liked += 1;
+        }
+        setProgress(Object.values(topicStats));
+      } catch (err) {
+        setError('Failed to load your preferences or progress.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (user) fetchData();
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -35,36 +59,56 @@ function Dashboard() {
         <h2 className="text-3xl font-extrabold text-center mb-6" style={{ color: '#a78bfa', textShadow: '0 0 8px #a21caf88, 0 0 16px #2563eb55' }}>
           Welcome{user?.email ? `, ${user.email}` : ''}!
         </h2>
-        <div className="flex flex-wrap gap-4 mb-6 justify-center">
-          <div className="bg-black bg-opacity-70 rounded-xl p-6 border border-purple-900 shadow-lg min-w-[200px]">
-            <h3 className="text-lg font-bold text-purple-100 mb-2">Topics</h3>
-            <div className="flex flex-wrap gap-2">
-              {topics.map(t => (
-                <span key={t} className="px-3 py-1 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white text-sm font-semibold shadow animate-pulse" style={{ boxShadow: '0 0 4px 1px #a21caf88' }}>{t}</span>
-              ))}
-            </div>
-          </div>
-          <div className="bg-black bg-opacity-70 rounded-xl p-6 border border-purple-900 shadow-lg min-w-[200px]">
-            <h3 className="text-lg font-bold text-purple-100 mb-2">Languages</h3>
-            <div className="flex flex-wrap gap-2">
-              {languages.map(l => (
-                <span key={l} className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white text-sm font-semibold shadow animate-pulse" style={{ boxShadow: '0 0 4px 1px #2563eb88' }}>{l}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="w-full mb-8">
-          <h3 className="text-lg font-bold text-purple-100 mb-4 text-center">Progress</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {progress.map(p => (
-              <div key={p.topic} className="bg-black bg-opacity-70 rounded-xl p-4 border border-pink-700/60 shadow-md flex flex-col items-center">
-                <span className="text-xl font-bold text-pink-400 mb-2">{p.topic}</span>
-                <span className="text-purple-200">Watched: <b>{p.watched}</b></span>
-                <span className="text-purple-200">Liked: <b>{p.liked}</b></span>
+        {loading ? (
+          <div className="text-purple-300 text-lg my-8 animate-pulse">Loading your data...</div>
+        ) : error ? (
+          <div className="text-pink-400 text-lg my-8">{error}</div>
+        ) : (
+          <>
+            <div className="flex flex-wrap gap-4 mb-6 justify-center">
+              <div className="bg-black bg-opacity-70 rounded-xl p-6 border border-purple-900 shadow-lg min-w-[200px]">
+                <h3 className="text-lg font-bold text-purple-100 mb-2">Topics</h3>
+                <div className="flex flex-wrap gap-2">
+                  {topics.length === 0 ? (
+                    <span className="text-purple-400">No topics selected.</span>
+                  ) : (
+                    topics.map(t => (
+                      <span key={t} className="px-3 py-1 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white text-sm font-semibold shadow animate-pulse" style={{ boxShadow: '0 0 4px 1px #a21caf88' }}>{t}</span>
+                    ))
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
+              <div className="bg-black bg-opacity-70 rounded-xl p-6 border border-purple-900 shadow-lg min-w-[200px]">
+                <h3 className="text-lg font-bold text-purple-100 mb-2">Languages</h3>
+                <div className="flex flex-wrap gap-2">
+                  {languages.length === 0 ? (
+                    <span className="text-purple-400">No languages selected.</span>
+                  ) : (
+                    languages.map(l => (
+                      <span key={l} className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white text-sm font-semibold shadow animate-pulse" style={{ boxShadow: '0 0 4px 1px #2563eb88' }}>{l}</span>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="w-full mb-8">
+              <h3 className="text-lg font-bold text-purple-100 mb-4 text-center">Progress</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {progress.length === 0 ? (
+                  <div className="col-span-3 text-purple-400 text-center">No progress yet.</div>
+                ) : (
+                  progress.map(p => (
+                    <div key={p.topic} className="bg-black bg-opacity-70 rounded-xl p-4 border border-pink-700/60 shadow-md flex flex-col items-center">
+                      <span className="text-xl font-bold text-pink-400 mb-2">{p.topic}</span>
+                      <span className="text-purple-200">Watched: <b>{p.watched}</b></span>
+                      <span className="text-purple-200">Liked: <b>{p.liked}</b></span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </>
+        )}
         <div className="flex gap-4 mt-4">
           <button
             className="px-6 py-2 rounded-lg bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold shadow-lg hover:from-pink-600 hover:to-blue-600 transition"
