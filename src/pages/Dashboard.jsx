@@ -1,5 +1,6 @@
 import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
+import { logout as apiLogout } from '../api';
 
 function Dashboard() {
   const { user, logout } = useUser();
@@ -13,6 +14,17 @@ function Dashboard() {
     { topic: 'Music', watched: 8, liked: 3 },
     { topic: 'Science', watched: 5, liked: 2 },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await apiLogout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      logout();
+      navigate('/');
+    }
+  };
 
   return (
     <div className="fixed inset-0 w-full h-full flex items-center justify-center bg-black overflow-hidden">
@@ -62,7 +74,7 @@ function Dashboard() {
           </button>
           <button
             className="px-6 py-2 rounded-lg bg-black border border-pink-700/60 text-pink-300 font-semibold shadow hover:bg-pink-900/20 transition"
-            onClick={logout}
+            onClick={handleLogout}
           >
             Logout
           </button>
