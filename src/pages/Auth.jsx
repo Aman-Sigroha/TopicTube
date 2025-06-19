@@ -47,20 +47,26 @@ function Auth() {
     setError('');
     setLoading(true);
     try {
-      // For now, we'll simulate a successful Google login
-      // In a real implementation, you'd send the credential to your backend
-      console.log('Google OAuth success:', credentialResponse);
-      
-      // Simulate user data from Google
-      const userData = {
-        email: 'user@gmail.com', // This would come from Google
-        id: 'google-user-id',
-        token: 'google-token',
-        method: 'google'
-      };
-      
-      login(userData);
-      navigate('/home');
+      const idToken = credentialResponse.credential;
+      // Send the ID token to your backend
+      const res = await fetch('http://localhost:4000/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // if you want to receive cookies (refresh token)
+        body: JSON.stringify({ idToken }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        login({
+          email: data.user.email,
+          id: data.user.id,
+          token: data.token,
+          method: 'google'
+        });
+        navigate('/home');
+      } else {
+        setError(data.error || 'Google authentication failed.');
+      }
     } catch (err) {
       setError('Google authentication failed.');
     } finally {
