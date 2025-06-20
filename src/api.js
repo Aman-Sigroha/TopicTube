@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const api = axios.create({
+const api = axios.create({
   baseURL: import.meta.env.PROD
     ? 'https://topictube-server.onrender.com/api'
     : '/api',
@@ -22,14 +22,19 @@ export async function logout() {
   return res.data;
 }
 
-export async function getPreferences() {
-  const res = await api.get('/preferences');
+export async function getPreferences(token) {
+  const res = await api.get('/preferences', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   return res.data;
 }
 
-export async function getProgress() {
-  const res = await api.get('/progress');
+export async function getProgress(token) {
+  const res = await api.get('/progress', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   return res.data;
 }
 
-// Add more API functions as needed (refresh, preferences, etc.) 
+// Add more API functions as needed (refresh, preferences, etc.)
+export default api; 

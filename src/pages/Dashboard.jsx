@@ -35,10 +35,10 @@ function Dashboard() {
       setLoading(true);
       setError('');
       try {
-        const pref = await getPreferences();
+        const pref = await getPreferences(user?.token);
         setTopics(pref.topics || []);
         setLanguages(pref.languages || []);
-        const prog = await getProgress();
+        const prog = await getProgress(user?.token);
         // Aggregate progress by topic
         const topicStats = {};
         for (const p of prog) {
