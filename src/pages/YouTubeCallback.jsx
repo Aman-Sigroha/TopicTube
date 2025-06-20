@@ -1,13 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
+import { useUser } from '../context/UserContext';
 
 function YouTubeCallback() {
   const [status, setStatus] = useState('Connecting to YouTube...');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { user } = useUser();
 
   useEffect(() => {
+    if (!user || !user.token) {
+      setStatus('You must be logged in to connect YouTube. Redirecting to login...');
+      setTimeout(() => navigate('/auth'), 2000);
+      return;
+    }
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
     if (!code) {
@@ -18,7 +25,9 @@ function YouTubeCallback() {
     async function connectYouTube() {
       try {
         setStatus('Finalizing connection...');
-        await api.post('/youtube/oauth/callback', { code });
+        await api.post('/youtube/oauth/callback', { code }, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
         setStatus('YouTube connected! Redirecting...');
         setTimeout(() => navigate('/dashboard'), 2000);
       } catch (err) {
@@ -27,7 +36,7 @@ function YouTubeCallback() {
       }
     }
     connectYouTube();
-  }, [navigate]);
+  }, [navigate, user]);
 
   return (
     <div className="fixed inset-0 w-full h-full flex items-center justify-center bg-black">
