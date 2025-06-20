@@ -3,7 +3,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { register as apiRegister, login as apiLogin } from '../api';
-import api from '../api';
+import { api } from '../api';
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
