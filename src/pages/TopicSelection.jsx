@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
+import { savePreferences } from '../api';
 
 const TOPICS = [
   'Technology', 'Music', 'Science', 'Fitness', 'Gaming', 'Education',
@@ -16,7 +18,10 @@ function TopicSelection() {
   const [customTopic, setCustomTopic] = useState('');
   const [languages, setLanguages] = useState(['English']);
   const [customLanguage, setCustomLanguage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { user } = useUser();
 
   const toggleTopic = (topic) => {
     setSelected(sel =>
@@ -54,10 +59,17 @@ function TopicSelection() {
     }
   };
 
-  const handleContinue = () => {
-    // TODO: Save to context/backend if needed
-    // Example: { topics: selected, languages }
-    navigate('/dashboard');
+  const handleContinue = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      await savePreferences(selected, languages, user?.token);
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Failed to save preferences.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleBack = () => {
@@ -207,11 +219,12 @@ function TopicSelection() {
         <button
           className="w-full py-2 rounded-lg bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold text-base shadow-lg transition disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ boxShadow: '0 0 8px 1px #a21caf88, 0 0 16px 4px #2563eb55' }}
-          disabled={selected.length === 0}
+          disabled={selected.length === 0 || loading}
           onClick={handleContinue}
         >
-          Continue
+          {loading ? 'Saving...' : 'Continue'}
         </button>
+        {error && <div className="text-pink-400 text-center mt-2">{error}</div>}
       </div>
     </div>
   );

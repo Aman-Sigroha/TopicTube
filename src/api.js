@@ -36,5 +36,12 @@ export async function getProgress(token) {
   return res.data;
 }
 
+export async function savePreferences(topics, languages, token) {
+  const res = await api.post('/preferences', { topics, languages }, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  return res.data;
+}
+
 // Add more API functions as needed (refresh, preferences, etc.)
 export default api; 
