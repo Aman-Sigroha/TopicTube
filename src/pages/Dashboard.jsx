@@ -3,6 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { logout as apiLogout, getPreferences, getProgress } from '../api';
 import { useEffect, useState } from 'react';
 
+const YOUTUBE_CLIENT_ID = '750933445565-igjq4ee5d88bb39c88o5f9cen8e9kedo.apps.googleusercontent.com';
+const YOUTUBE_REDIRECT_URI = `${window.location.origin}/youtube-callback`;
+const YOUTUBE_SCOPE = 'https://www.googleapis.com/auth/youtube.force-ssl';
+
+function getYouTubeOAuthUrl() {
+  const params = new URLSearchParams({
+    client_id: YOUTUBE_CLIENT_ID,
+    redirect_uri: YOUTUBE_REDIRECT_URI,
+    response_type: 'code',
+    scope: YOUTUBE_SCOPE,
+    access_type: 'offline',
+    include_granted_scopes: 'true',
+    prompt: 'consent',
+  });
+  return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+}
+
 function Dashboard() {
   const { user, logout } = useUser();
   const navigate = useNavigate();
@@ -107,6 +124,13 @@ function Dashboard() {
                 )}
               </div>
             </div>
+            {/* Connect YouTube Button */}
+            <button
+              className="px-6 py-2 rounded-lg bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white font-semibold shadow-lg hover:from-red-600 hover:to-blue-600 transition mb-4 mt-2"
+              onClick={() => window.location.href = getYouTubeOAuthUrl()}
+            >
+              Connect YouTube
+            </button>
           </>
         )}
         <div className="flex gap-4 mt-4">

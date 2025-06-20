@@ -3,6 +3,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { register as apiRegister, login as apiLogin } from '../api';
+import api from '../api';
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -48,27 +49,21 @@ function Auth() {
     setLoading(true);
     try {
       const idToken = credentialResponse.credential;
-      // Send the ID token to your backend
-      const res = await fetch('http://localhost:4000/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // if you want to receive cookies (refresh token)
-        body: JSON.stringify({ idToken }),
+      // Send the ID token to your backend using the api instance
+      const { data } = await api.post('/auth/google', { idToken });
+      login({
+        email: data.user.email,
+        id: data.user.id,
+        token: data.token,
+        method: 'google'
       });
-      const data = await res.json();
-      if (res.ok) {
-        login({
-          email: data.user.email,
-          id: data.user.id,
-          token: data.token,
-          method: 'google'
-        });
-        navigate('/home');
-      } else {
-        setError(data.error || 'Google authentication failed.');
-      }
+      navigate('/home');
     } catch (err) {
-      setError('Google authentication failed.');
+      if (err.response && err.response.data && err.response.data.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('Google authentication failed.');
+      }
     } finally {
       setLoading(false);
     }
